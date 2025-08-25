@@ -3,6 +3,8 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { ModuleFederationPlugin } = require("webpack").container;
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
+const useMF = process.env.USE_MF === "1"; // ⬅️ Activa MF sólo si USE_MF=1
+
 module.exports = (_, argv) => {
   const isProd = argv.mode === "production";
   return {
@@ -27,16 +29,19 @@ module.exports = (_, argv) => {
       ]
     },
     plugins: [
+      useMF &&
       new ModuleFederationPlugin({
         name: "registro",
         filename: "remoteEntry.js",
         exposes: {
           "./RegistroApp": "./src/App"
         },
-        shared: {
-          react: { singleton: true, requiredVersion: false },
-          "react-dom": { singleton: true, requiredVersion: false }
-        }
+        shared: useMF
+          ? {
+            react: { singleton: true, requiredVersion: false },
+            "react-dom": { singleton: true, requiredVersion: false }
+          }
+          : undefined
       }),
       new HtmlWebpackPlugin({ template: "./public/index.html" }),
       new MiniCssExtractPlugin()

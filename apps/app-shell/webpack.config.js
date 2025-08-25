@@ -5,22 +5,15 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = (_, argv) => {
   const isProd = argv.mode === "production";
+  const REMOTE_REGISTRO_URL =
+    process.env.REMOTE_REGISTRO_URL || "http://localhost:3001/remoteEntry.js";
+
   return {
     entry: path.resolve(__dirname, "src/index.tsx"),
     mode: isProd ? "production" : "development",
-    target: "web",
     devtool: isProd ? "source-map" : "eval-cheap-module-source-map",
-    devServer: {
-      port: 3000,
-      historyApiFallback: true,
-      static: { directory: path.resolve(__dirname, "public") },
-      client: { overlay: true }
-    },
-    output: {
-      path: path.resolve(__dirname, "dist"),
-      publicPath: "auto",
-      clean: true
-    },
+    devServer: { port: 3000, historyApiFallback: true, static: path.resolve(__dirname, "public") },
+    output: { path: path.resolve(__dirname, "dist"), publicPath: "auto", clean: true },
     resolve: { extensions: [".tsx", ".ts", ".js"] },
     module: {
       rules: [
@@ -29,6 +22,16 @@ module.exports = (_, argv) => {
       ]
     },
     plugins: [
+      new ModuleFederationPlugin({
+        name: "app_shell",
+        remotes: {
+          registro: `registro@${REMOTE_REGISTRO_URL}`
+        },
+        shared: {
+          react: { singleton: true, requiredVersion: false, eager: true },
+          "react-dom": { singleton: true, requiredVersion: false, eager: true }
+        }
+      }),
       new HtmlWebpackPlugin({ template: "./public/index.html" }),
       new MiniCssExtractPlugin()
     ]
