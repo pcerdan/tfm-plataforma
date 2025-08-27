@@ -18,7 +18,7 @@ module.exports = (_, argv) => {
     module: {
       rules: [
         { test: /\.tsx?$/, use: "ts-loader", exclude: /node_modules/ },
-        { test: /\.css$/, use: [MiniCssExtractPlugin.loader, "css-loader", "postcss-loader"] }
+        { test: /\.css$/, use: [ isProd ? MiniCssExtractPlugin.loader : "style-loader", "css-loader", "postcss-loader"] }
       ]
     },
     plugins: [
@@ -28,12 +28,12 @@ module.exports = (_, argv) => {
           registro: `registro@${REMOTE_REGISTRO_URL}`
         },
         shared: {
-          react: { singleton: true, requiredVersion: false, eager: true },
-          "react-dom": { singleton: true, requiredVersion: false, eager: true }
+          react: { singleton: true, requiredVersion: false, eager: true, requiredVersion: "18.2.0" },
+          "react-dom": { singleton: true, requiredVersion: false, eager: true, requiredVersion: "18.2.0" }
         }
       }),
       new HtmlWebpackPlugin({ template: "./public/index.html" }),
       new MiniCssExtractPlugin()
-    ]
+    ],
   };
 };

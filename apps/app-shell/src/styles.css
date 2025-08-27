@@ -1,3 +1,15 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@layer utilities {
+  .bg-indigo-300-force { background-color: #a5b4fc !important; }
+  .bg-emerald-300-force { background-color: #6ee7b7 !important; }
+  .bg-amber-300-force { background-color: #fde68a !important; }
+
+  .bg-indigo-100-force { background-color: #e0e7ff !important; }
+  .bg-emerald-100-force { background-color: #d1fae5 !important; }
+  .bg-amber-100-force { background-color: #fef3c7 !important; }
+
+  .hover\:bg-indigo-200-force:hover { background-color: #c7d2fe !important; }
+  .hover\:bg-emerald-200-force:hover { background-color: #a7f3d0 !important; }
+  .hover\:bg-amber-200-force:hover { background-color: #fde68a !important; }
+}

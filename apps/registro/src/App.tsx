@@ -1,196 +1,243 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./styles.css";
+import { Button, FieldError, Help, Input, Label, SessionCard } from "./ui";
 
+// 🧩 Tipado de configuración recibida por props
+type RegistroTheme = {
+  primaryColor: string;
+};
+
+type ExtraField = {
+  name: string;
+  label: string;
+  type: string;
+  required: boolean;
+};
+
+type RegistroConfig = {
+  theme: RegistroTheme;
+  config: {
+    config: any;
+    showSessionSelector: boolean;
+    extraFields: ExtraField[];
+  };
+};
+
+type Props = RegistroConfig;
+
+// Datos internos
 type Inscripcion = {
   id: string;
   nombre: string;
   email: string;
   sesiones: string[];
-  fecha: string; // ISO
+  fecha: string;
 };
 
-const SESIONES_DISPONIBLES = ["Taller 1", "Taller 2", "Conferencia 1"] as const;
-
+const SESIONES = ["Taller 1", "Taller 2", "Keynote"] as const;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function leerRegistros(): Inscripcion[] {
+const colorMap: Record<(typeof SESIONES)[number], "indigo" | "emerald" | "amber"> = {
+  "Taller 1": "indigo",
+  "Taller 2": "emerald",
+  "Keynote": "amber"
+};
+
+const read = (): Inscripcion[] => {
   try {
     return JSON.parse(localStorage.getItem("registros") || "[]");
   } catch {
     return [];
   }
-}
-function guardarRegistro(r: Inscripcion) {
-  const arr = leerRegistros();
-  arr.push(r);
-  localStorage.setItem("registros", JSON.stringify(arr));
-}
+};
+const write = (r: Inscripcion) =>
+  localStorage.setItem("registros", JSON.stringify([...read(), r]));
 
-export default function RegistroApp() {
+export default function RegistroApp({ theme, config }: Props) {
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [sesiones, setSesiones] = useState<string[]>([]);
-  const [enviado, setEnviado] = useState<Inscripcion | null>(null);
-  const [touched, setTouched] = useState<{ [k: string]: boolean }>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [toast, setToast] = useState<string | null>(null);
+  const firstInvalidRef = useRef<HTMLInputElement | null>(null);
+  const color = theme?.primaryColor || "#1d4ed8";
 
-  const errores = useMemo(() => {
-    const e: { [k: string]: string | null } = {};
-    e.nombre = nombre.trim() ? null : "El nombre es obligatorio.";
-    e.email = email.trim() ? (EMAIL_RE.test(email) ? null : "Introduce un email válido.") : "El email es obligatorio.";
-    e.sesiones = sesiones.length ? null : "Selecciona al menos una sesión.";
-    return e;
-  }, [nombre, email, sesiones]);
+  const [extraFields, setExtraFields] = useState<Record<string, string>>({});
 
-  const hayErrores = Object.values(errores).some((v) => v);
+  const errors = useMemo(() => ({
+    nombre: nombre.trim() ? null : "El nombre es obligatorio.",
+    email: email.trim() ? (EMAIL_RE.test(email) ? null : "Introduce un email válido.") : "El email es obligatorio.",
+    sesiones: !config?.config?.showSessionSelector || sesiones.length ? null : "Selecciona al menos una sesión.",
+  }), [nombre, email, sesiones, config]);
 
-  const toggleSesion = (s: string) =>
-    setSesiones((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]));
+  const hasErrors = Object.values(errors).some(Boolean);
 
-  const marcarTouched = (campo: string) =>
-    setTouched((t) => (t[campo] ? t : { ...t, [campo]: true }));
+  useEffect(() => {
+    if (toast) {
+      const t = setTimeout(() => setToast(null), 2500);
+      return () => clearTimeout(t);
+    }
+  }, [toast]);
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // marca todos como tocados al enviar
     setTouched({ nombre: true, email: true, sesiones: true });
-    if (hayErrores) return;
+
+    if (hasErrors) {
+      firstInvalidRef.current?.focus();
+      return;
+    }
 
     const reg: Inscripcion = {
       id: crypto.randomUUID(),
       nombre: nombre.trim(),
       email: email.trim(),
       sesiones: [...sesiones],
-      fecha: new Date().toISOString(),
+      fecha: new Date().toISOString()
     };
-    guardarRegistro(reg);
-    setEnviado(reg);
+
+    write(reg);
+    setToast("Registro completado.");
+    setNombre("");
+    setEmail("");
+    setSesiones([]);
+    setTouched({});
+    setExtraFields({});
   };
 
-  if (enviado) {
-    return (
-      <div className="max-w-md mx-auto p-6">
-        <h1 className="text-2xl font-semibold mb-3">✅ Registro completado</h1>
-        <p className="mb-4">¡Gracias, {enviado.nombre}! Te hemos inscrito en:</p>
-        <ul className="list-disc ml-5 mb-6">
-          {enviado.sesiones.map((s) => (
-            <li key={s}>{s}</li>
-          ))}
-        </ul>
-        <p className="text-sm opacity-70 mb-6">Fecha: {new Date(enviado.fecha).toLocaleString()}</p>
-        <button
-          className="border px-4 py-2 rounded"
-          onClick={() => {
-            // permite nuevo registro sin recargar
-            setEnviado(null);
-            setNombre("");
-            setEmail("");
-            setSesiones([]);
-            setTouched({});
-          }}
-        >
-          Hacer otro registro
-        </button>
-      </div>
-    );
-  }
+  const setFirstInvalid = (el: HTMLInputElement | null, invalid: boolean) => {
+    if (invalid && !firstInvalidRef.current) firstInvalidRef.current = el;
+  };
 
   return (
-    <div className="max-w-md mx-auto p-6">
-      <h1 className="text-2xl font-semibold mb-4">Registro de asistentes</h1>
+    <div className="min-h-dvh flex items-center justify-center px-4">
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow p-6">
+        <h1 className="text-2xl font-semibold mb-1 text-center text-[color:var(--primary)]">Registro de asistentes</h1>
+        <p className="text-sm text-gray-600 text-center mb-6">Completa los campos marcados con *</p>
 
-      <form onSubmit={onSubmit} className="space-y-5" noValidate>
-        {/* Nombre */}
-        <div>
-          <label className="block text-sm mb-1" htmlFor="nombre">
-            Nombre <span className="text-red-600">*</span>
-          </label>
-          <input
-            id="nombre"
-            className={`w-full border p-2 rounded outline-none ${
-              touched.nombre && errores.nombre ? "border-red-500" : "border-gray-300"
-            }`}
-            placeholder="Tu nombre"
-            value={nombre}
-            onBlur={() => marcarTouched("nombre")}
-            onChange={(e) => setNombre(e.target.value)}
-          />
-          {touched.nombre && errores.nombre && (
-            <p className="text-red-600 text-xs mt-1">{errores.nombre}</p>
-          )}
-        </div>
-
-        {/* Email */}
-        <div>
-          <label className="block text-sm mb-1" htmlFor="email">
-            Email <span className="text-red-600">*</span>
-          </label>
-          <input
-            id="email"
-            type="email"
-            className={`w-full border p-2 rounded outline-none ${
-              touched.email && errores.email ? "border-red-500" : "border-gray-300"
-            }`}
-            placeholder="tu@email.com"
-            value={email}
-            onBlur={() => marcarTouched("email")}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          {touched.email && errores.email && (
-            <p className="text-red-600 text-xs mt-1">{errores.email}</p>
-          )}
-        </div>
-
-        {/* Sesiones */}
-        <fieldset
-          className={`border rounded p-3 ${
-            touched.sesiones && errores.sesiones ? "border-red-500" : "border-gray-300"
-          }`}
+        <form
+          onSubmit={onSubmit}
+          className="space-y-5 mt-4"
+          noValidate
+          aria-describedby="form-status"
+          style={{ "--primary": color } as React.CSSProperties}
         >
-          <legend className="px-1 text-sm">Sesiones <span className="text-red-600">*</span></legend>
-          <div className="space-y-2 mt-2">
-            {SESIONES_DISPONIBLES.map((s) => (
-              <label key={s} className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={sesiones.includes(s)}
-                  onChange={() => toggleSesion(s)}
-                  onBlur={() => marcarTouched("sesiones")}
-                />
-                <span>{s}</span>
-              </label>
-            ))}
+          {/* Nombre */}
+          <div className="text-center">
+            <Label htmlFor="nombre">Nombre <span className="text-red-600">*</span></Label>
+            <Input
+              id="nombre"
+              placeholder="Tu nombre"
+              value={nombre}
+              onBlur={() => setTouched(t => ({ ...t, nombre: true }))}
+              onChange={(e) => setNombre(e.target.value)}
+              ref={(el) => setFirstInvalid(el, !!(touched.nombre && errors.nombre))}
+              aria-invalid={!!(touched.nombre && errors.nombre)}
+              aria-describedby={touched.nombre && errors.nombre ? "err-nombre" : undefined}
+            />
+            {touched.nombre && errors.nombre
+              ? <FieldError id="err-nombre">{errors.nombre}</FieldError>
+              : <Help>Como aparece en tu acreditación.</Help>}
           </div>
-          {touched.sesiones && errores.sesiones && (
-            <p className="text-red-600 text-xs mt-2">{errores.sesiones}</p>
+
+          {/* Email */}
+          <div className="text-center">
+            <Label htmlFor="email">Email <span className="text-red-600">*</span></Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="tu@email.com"
+              autoComplete="email"
+              value={email}
+              onBlur={() => setTouched(t => ({ ...t, email: true }))}
+              onChange={(e) => setEmail(e.target.value)}
+              ref={(el) => setFirstInvalid(el, !!(touched.email && errors.email))}
+              aria-invalid={!!(touched.email && errors.email)}
+              aria-describedby={touched.email && errors.email ? "err-email" : undefined}
+            />
+            {touched.email && errors.email
+              ? <FieldError id="err-email">{errors.email}</FieldError>
+              : <Help>Usaremos este email para confirmar tu plaza.</Help>}
+          </div>
+
+          {/* Campos extra */}
+          {config?.config?.extraFields?.map((field : ExtraField) => (
+            <div className="text-center" key={field.name}>
+              <Label htmlFor={field.name}>
+                {field.label} {field.required && <span className="text-red-600">*</span>}
+              </Label>
+              <Input
+                id={field.name}
+                name={field.name}
+                type={field.type}
+                required={field.required}
+                value={extraFields[field.name] || ""}
+                onChange={(e) => setExtraFields(f => ({ ...f, [field.name]: e.target.value }))}
+              />
+            </div>
+          ))}
+
+          {/* Sesiones (si se habilita) */}
+          {config?.config?.showSessionSelector && (
+            <fieldset
+              className={`rounded-2xl px-4 py-4 border ${touched.sesiones && errors.sesiones ? "border-red-500" : "border-gray-300"}`}
+            >
+              <legend className="px-1 text-sm font-medium text-center">Lista de conferencias <span className="text-red-600">*</span></legend>
+              <div className="flex flex-wrap justify-center items-center gap-4">
+                {SESIONES.map((s) => (
+                  <SessionCard
+                    key={s}
+                    label={s}
+                    checked={sesiones.includes(s)}
+                    color={colorMap[s]}
+                    onChange={() =>
+                      setSesiones((prev) =>
+                        prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
+                      )
+                    }
+                    onBlur={() => setTouched((t) => ({ ...t, sesiones: true }))}
+                  />
+                ))}
+              </div>
+
+              {touched.sesiones && errors.sesiones
+                ? <p className="text-red-600 text-xs mt-2 text-center">{errors.sesiones}</p>
+                : <p className="text-xs text-gray-500 mt-2 text-center">Selecciona una o más a las que asistir.</p>}
+            </fieldset>
           )}
-        </fieldset>
 
-        {/* Acciones */}
-        <div className="flex gap-3">
-          <button
-            type="submit"
-            className="bg-black text-white px-4 py-2 rounded disabled:opacity-50"
-            disabled={hayErrores && Object.keys(touched).length > 0}
-          >
-            Enviar
-          </button>
-          <button
-            type="button"
-            className="border px-4 py-2 rounded"
-            onClick={() => {
-              setNombre("");
-              setEmail("");
-              setSesiones([]);
-              setTouched({});
-            }}
-          >
-            Limpiar
-          </button>
-        </div>
-      </form>
+          {/* Botones */}
+          <div className="flex justify-center gap-4 mt-6">
+            <Button type="submit" disabled={hasErrors && Object.keys(touched).length > 0}>
+              Enviar
+            </Button>
+            <button
+              type="button"
+              className="border px-4 py-2 rounded text-sm"
+              onClick={() => {
+                setNombre("");
+                setEmail("");
+                setSesiones([]);
+                setTouched({});
+                setExtraFields({});
+              }}
+            >
+              Limpiar
+            </button>
+          </div>
 
-      {/* Debug opcional: ver registros guardados */}
-      {/* <pre className="mt-6 text-xs opacity-70">{JSON.stringify(leerRegistros(), null, 2)}</pre> */}
+          <div id="form-status" className="sr-only" aria-live="polite">
+            {toast ? "Registro completado" : ""}
+          </div>
+        </form>
+
+        {/* Toast */}
+        {toast && (
+          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-black text-white rounded px-4 py-2 shadow">
+            {toast}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

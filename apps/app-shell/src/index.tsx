@@ -2,11 +2,38 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
 import "./styles.css";
+import "./navbar";
+import { StickyNavbar } from "./navbar";
+import { RegistroConfigProvider, useRegistroConfig } from "./RegistroConfigContext";
+import ConfigRegistro from "./ConfigRegistro";
+import type { RegistroConfig } from "./types/registro";
+
+const { config } = useRegistroConfig();
+
+function loadRemoteStyles(url: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    // evita recargar si ya está inyectado
+    if (document.querySelector(`link[href="${url}"]`)) return resolve();
+
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = url;
+    link.onload = () => resolve();
+    link.onerror = () => reject(`No se pudo cargar ${url}`);
+    document.head.appendChild(link);
+  });
+}
 
 // Carga perezosa del MF de registro
-const RegistroLazy = React.lazy(() => import("../../registro/src/App"));
+const RegistroLazy: React.LazyExoticComponent<React.ComponentType<RegistroConfig>> = React.lazy(() =>
+  Promise.all([
+    import("../../registro/registroApp"),
+    loadRemoteStyles("http://localhost:3001/styles.css")
+  ]).then(([mod]) => ({ default: mod.default as React.ComponentType<RegistroConfig> }))
+);
 
-// Pequeño ErrorBoundary para capturar fallos de carga del remoto
+
+// ErrorBoundary para capturar fallos de carga del remoto
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
   constructor(props: any) {
     super(props);
@@ -21,8 +48,8 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   render() {
     if (this.state.hasError) {
       return (
-        <div className="p-6 border rounded bg-red-50 text-red-700">
-          No se pudo cargar el módulo de registro. ¿Está ejecutándose el remoto en <code>localhost:3001</code>?
+        <div className="bg-red-100 text-red-800 border border-red-300 rounded p-4">
+          <strong>Error:</strong> No se pudo cargar el módulo de registro. ¿Está ejecutándose el remoto en <code>localhost:3001</code>?
         </div>
       );
     }
@@ -30,67 +57,23 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   }
 }
 
-function Nav() {
-  const location = useLocation();
-  const Item = ({
-    to,
-    label,
-    disabled
-  }: {
-    to?: string;
-    label: string;
-    disabled?: boolean;
-  }) => {
-    if (disabled) {
-      return (
-        <span
-          className="px-3 py-1 rounded border cursor-not-allowed opacity-50"
-          title="Próximamente"
-          aria-disabled="true"
-        >
-          {label}
-        </span>
-      );
-    }
-    return (
-      <Link
-        to={to!}
-        className={`px-3 py-1 rounded border hover:bg-gray-100 ${
-          location.pathname === to ? "bg-gray-100" : ""
-        }`}
-      >
-        {label}
-      </Link>
-    );
-  };
-
-  return (
-    <nav className="flex gap-2 flex-wrap">
-      <Item label="Inicio" to="/" />
-      <Item label="Agenda" disabled />
-      <Item label="Sesiones" disabled />
-      <Item label="Ponentes" disabled />
-      <Item label="Patrocinadores" disabled />
-      <Item label="Registro" to="/registro" />
-    </nav>
-  );
-}
 
 function Home() {
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">Plataforma de Eventos</h1>
-      <p className="text-sm opacity-80">
+    <div className="space-y-4 bg-white rounded-xl p-6 shadow">
+      <h1 className="text-2xl font-semibold text-center">Plataforma de Eventos</h1>
+      <p className="text-sm text-gray-600 text-center">
         Esta es la plantilla inicial. Solo el módulo <strong>Registro</strong> está activo; el resto
         aparecen como “Próximamente”.
       </p>
-      <ul className="list-disc ml-6">
+      <ul className="list-disc ml-6 text-sm text-gray-700">
         <li>Agenda – próximamente</li>
         <li>Sesiones – próximamente</li>
         <li>Ponentes – próximamente</li>
         <li>Patrocinadores – próximamente</li>
         <li>Registro – <em>habilitado</em></li>
       </ul>
+      <div className="bg-red-500 text-white p-4">¿Tailwind está funcionando?</div>
     </div>
   );
 }
@@ -98,26 +81,42 @@ function Home() {
 function App() {
   return (
     <BrowserRouter>
-      <div className="max-w-3xl mx-auto p-6 space-y-6">
-        <Nav />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route
-            path="/registro"
-            element={
-              <ErrorBoundary>
-                <React.Suspense fallback={<div className="p-6">Cargando módulo de registro…</div>}>
-                  <RegistroLazy />
-                </React.Suspense>
-              </ErrorBoundary>
-            }
-          />
-          <Route path="*" element={<div>Página no encontrada</div>} />
-        </Routes>
+      <div className="min-h-screen flex flex-col bg-gray-50 font-sans text-gray-900">
+        <StickyNavbar />
+        <main className="flex-grow overflow-auto">
+          <div className="max-w-4xl mx-auto space-y-6">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route
+                path="/registro"
+                element={
+                  <ErrorBoundary>
+                    <React.Suspense fallback={<div className="p-6">Cargando módulo de registro…</div>}>
+                      {config ? (
+                        <RegistroLazy {...(config as RegistroConfig)} />
+                      ) : (
+                        <div className="p-6 text-red-600">No se ha configurado el registro. Ve a <Link to="/configurar">/configurar</Link>.</div>
+                      )}
+                    </React.Suspense>
+                  </ErrorBoundary>
+                }
+              />
+              <Route path="/configurar" element={<ConfigRegistro />} />
+              <Route path="*" element={<div className="text-center text-gray-600">Página no encontrada</div>} />
+            </Routes>
+          </div>
+        </main>
       </div>
     </BrowserRouter>
   );
 }
 
 const el = document.getElementById("root");
-if (el) createRoot(el).render(<App />);
+if (el) 
+  createRoot(el).render(
+  <React.StrictMode>
+    <RegistroConfigProvider>
+      <App />
+    </RegistroConfigProvider>
+  </React.StrictMode>
+  );

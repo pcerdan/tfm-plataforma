@@ -25,7 +25,7 @@ module.exports = (_, argv) => {
     module: {
       rules: [
         { test: /\.tsx?$/, use: "ts-loader", exclude: /node_modules/ },
-        { test: /\.css$/, use: [require("mini-css-extract-plugin").loader, "css-loader", "postcss-loader"] }
+        { test: /\.css$/i, use: [MiniCssExtractPlugin.loader, "css-loader", "postcss-loader"] }
       ]
     },
     plugins: [
@@ -34,17 +34,22 @@ module.exports = (_, argv) => {
         name: "registro",
         filename: "remoteEntry.js",
         exposes: {
-          "./RegistroApp": "./src/App"
+          "./RegistroApp": "./src/App.tsx"
         },
         shared: useMF
           ? {
-            react: { singleton: true, requiredVersion: false },
-            "react-dom": { singleton: true, requiredVersion: false }
+            react: { singleton: true, requiredVersion: false, eager: true, requiredVersion: "18.2.0" },
+            "react-dom": { singleton: true, requiredVersion: false, eager: true, requiredVersion: "18.2.0" }
           }
           : undefined
       }),
       new HtmlWebpackPlugin({ template: "./public/index.html" }),
-      new MiniCssExtractPlugin()
-    ]
+      new MiniCssExtractPlugin({
+        filename: "styles.css",
+      })
+    ],
+    exposes: {
+      "./RegistroApp": "./src/App.tsx"
+    },
   };
 };
