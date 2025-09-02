@@ -12,7 +12,17 @@ module.exports = (_, argv) => {
     entry: path.resolve(__dirname, "src/index.tsx"),
     mode: isProd ? "production" : "development",
     devtool: isProd ? "source-map" : "eval-cheap-module-source-map",
-    devServer: { port: 3000, historyApiFallback: true, static: path.resolve(__dirname, "public") },
+    devServer: { 
+      port: 3000, 
+      historyApiFallback: true, 
+      static: path.resolve(__dirname, "public"),
+      watchFiles: {
+        paths: ["src/**/*"],
+        options: {
+          ignored: ["**/dist/**", "**/node_modules/**"]
+        }
+      }
+    },
     output: { path: path.resolve(__dirname, "dist"), publicPath: "auto", clean: true },
     resolve: { extensions: [".tsx", ".ts", ".js"] },
     module: {
@@ -27,9 +37,12 @@ module.exports = (_, argv) => {
         remotes: {
           registro: `registro@${REMOTE_REGISTRO_URL}`
         },
+        exposes: {
+          "./RegistroConfigContext": "./src/RegistroConfigContext"
+        },
         shared: {
-          react: { singleton: true, requiredVersion: false, eager: true, requiredVersion: "18.2.0" },
-          "react-dom": { singleton: true, requiredVersion: false, eager: true, requiredVersion: "18.2.0" }
+          react: { singleton: true, requiredVersion: false, eager: true },
+          "react-dom": { singleton: true, requiredVersion: false, eager: true }
         }
       }),
       new HtmlWebpackPlugin({ template: "./public/index.html" }),

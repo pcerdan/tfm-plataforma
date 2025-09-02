@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
 import "./styles.css";
@@ -7,13 +7,15 @@ import { StickyNavbar } from "./navbar";
 import { RegistroConfigProvider, useRegistroConfig } from "./RegistroConfigContext";
 import ConfigRegistro from "./ConfigRegistro";
 import type { RegistroConfig } from "./types/registro";
+import ("../../registro/src/styles.css");
 
-const { config } = useRegistroConfig();
-
-function loadRemoteStyles(url: string): Promise<void> {
-  return new Promise((resolve, reject) => {
+/*function loadRemoteStyles(url: string): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
     // evita recargar si ya está inyectado
-    if (document.querySelector(`link[href="${url}"]`)) return resolve();
+    if (document.querySelector(`link[href="${url}"]`)) {
+      resolve();
+      return;
+    }
 
     const link = document.createElement("link");
     link.rel = "stylesheet";
@@ -22,15 +24,14 @@ function loadRemoteStyles(url: string): Promise<void> {
     link.onerror = () => reject(`No se pudo cargar ${url}`);
     document.head.appendChild(link);
   });
-}
+}*/
 
-// Carga perezosa del MF de registro
-const RegistroLazy: React.LazyExoticComponent<React.ComponentType<RegistroConfig>> = React.lazy(() =>
-  Promise.all([
-    import("../../registro/registroApp"),
-    loadRemoteStyles("http://localhost:3001/styles.css")
-  ]).then(([mod]) => ({ default: mod.default as React.ComponentType<RegistroConfig> }))
+
+// Carga del MF de registro
+const RegistroLazy = React.lazy(() =>
+  import("registro/RegistroApp").then((mod) => ({ default: mod.default }))
 );
+
 
 
 // ErrorBoundary para capturar fallos de carga del remoto
@@ -79,6 +80,8 @@ function Home() {
 }
 
 function App() {
+  const { config } = useRegistroConfig();
+
   return (
     <BrowserRouter>
       <div className="min-h-screen flex flex-col bg-gray-50 font-sans text-gray-900">
@@ -87,7 +90,7 @@ function App() {
           <div className="max-w-4xl mx-auto space-y-6">
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route
+             <Route
                 path="/registro"
                 element={
                   <ErrorBoundary>
@@ -95,13 +98,13 @@ function App() {
                       {config ? (
                         <RegistroLazy {...(config as RegistroConfig)} />
                       ) : (
-                        <div className="p-6 text-red-600">No se ha configurado el registro. Ve a <Link to="/configurar">/configurar</Link>.</div>
+                        <div className="p-6 text-red-600">No se ha configurado el registro. Ve a <Link to="/configuracion">Configuración</Link>.</div>
                       )}
                     </React.Suspense>
                   </ErrorBoundary>
                 }
               />
-              <Route path="/configurar" element={<ConfigRegistro />} />
+              <Route path="/configuracion" element={<ConfigRegistro />} />
               <Route path="*" element={<div className="text-center text-gray-600">Página no encontrada</div>} />
             </Routes>
           </div>

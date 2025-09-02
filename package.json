@@ -17,6 +17,7 @@
     "@types/react-dom": "^19.1.8",
     "@types/webpack-env": "^1.18.8",
     "autoprefixer": "^10.4.21",
+    "copy-webpack-plugin": "^13.0.1",
     "css-loader": "^7.1.2",
     "npm-run-all": "^4.1.5",
     "postcss": "^8.5.6",

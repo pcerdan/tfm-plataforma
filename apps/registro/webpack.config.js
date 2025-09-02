@@ -13,8 +13,19 @@ module.exports = (_, argv) => {
     devtool: isProd ? "source-map" : "eval-cheap-module-source-map",
     devServer: {
       port: 3001,
+      static: [
+        path.resolve(__dirname, "dist"),
+        path.resolve(__dirname, "public")
+      ],
       historyApiFallback: true,
-      headers: { "Access-Control-Allow-Origin": "*" }
+      headers: { "Access-Control-Allow-Origin": "*" },
+      watchFiles: {
+        paths: ["src/**/*"],
+        options: {
+          ignored: ["**/dist/**", "**/node_modules/**"]
+        }
+      }
+
     },
     output: {
       path: path.resolve(__dirname, "dist"),
@@ -29,27 +40,25 @@ module.exports = (_, argv) => {
       ]
     },
     plugins: [
-      useMF &&
       new ModuleFederationPlugin({
         name: "registro",
         filename: "remoteEntry.js",
-        exposes: {
-          "./RegistroApp": "./src/App.tsx"
+        remotes: {
+           appShell: "appShell@http://localhost:3000/remoteEntry.js"
         },
-        shared: useMF
-          ? {
-            react: { singleton: true, requiredVersion: false, eager: true, requiredVersion: "18.2.0" },
-            "react-dom": { singleton: true, requiredVersion: false, eager: true, requiredVersion: "18.2.0" }
+        exposes: {
+          "./RegistroApp": "./src/App.tsx",
+          "./styles": "./src/styles.css"
+        },
+        shared: {
+            react: { singleton: true, requiredVersion: false, eager: true },
+            "react-dom": { singleton: true, requiredVersion: false, eager: true }
           }
-          : undefined
       }),
       new HtmlWebpackPlugin({ template: "./public/index.html" }),
       new MiniCssExtractPlugin({
         filename: "styles.css",
-      })
+      }),
     ],
-    exposes: {
-      "./RegistroApp": "./src/App.tsx"
-    },
   };
 };

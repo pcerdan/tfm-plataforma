@@ -91,7 +91,7 @@ export function StickyNavbar() {
         onPointerEnterCapture={undefined} 
         onPointerLeaveCapture={undefined}
       >
-        <a href="#" className="flex items-center">
+        <a href="/configuracion" className="flex items-center">
           Configuración
         </a>
       </Typography>
@@ -101,7 +101,7 @@ export function StickyNavbar() {
   return (
     <div className="-m-6 max-h-[768px] w-[calc(100%+48px)] overflow-scroll">
       <Navbar 
-        className="sticky top-0 z-10 h-max max-w-full rounded-none px-4 py-2 lg:px-8 lg:py-4 text-gray-900"
+        className="sticky top-0 z-10 h-16 max-w-full rounded-none px-4 py-2 lg:px-8 lg:py-4 text-gray-900"
         placeholder={undefined} 
         onResize={undefined} 
         onResizeCapture={undefined} 
@@ -127,7 +127,8 @@ export function StickyNavbar() {
                 <Button
                   variant="gradient"
                   size="sm"
-                  className="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700"
+                  className="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium
+                   rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 cursor-pointer"
                   placeholder={undefined} 
                   onResize={undefined} 
                   onResizeCapture={undefined} 

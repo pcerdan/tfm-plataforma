@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./styles.css";
 import { Button, FieldError, Help, Input, Label, SessionCard } from "./ui";
-
 // 🧩 Tipado de configuración recibida por props
 type RegistroTheme = {
   primaryColor: string;
@@ -15,15 +14,19 @@ type ExtraField = {
 };
 
 type RegistroConfig = {
-  theme: RegistroTheme;
+  theme: {
+    primaryColor: string;
+  };
   config: {
-    config: any;
     showSessionSelector: boolean;
-    extraFields: ExtraField[];
+    extraFields: {
+        name: string;
+        label: string;
+        type: string;
+        required: boolean;
+    }[];
   };
 };
-
-type Props = RegistroConfig;
 
 // Datos internos
 type Inscripcion = {
@@ -34,13 +37,13 @@ type Inscripcion = {
   fecha: string;
 };
 
-const SESIONES = ["Taller 1", "Taller 2", "Keynote"] as const;
+const SESIONES = ["Seminario sobre IA", "Taller de Programación Competitiva", "Iniciación a la Programación"] as const;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const colorMap: Record<(typeof SESIONES)[number], "indigo" | "emerald" | "amber"> = {
-  "Taller 1": "indigo",
-  "Taller 2": "emerald",
-  "Keynote": "amber"
+  "Seminario sobre IA": "indigo",
+  "Taller de Programación Competitiva": "emerald",
+  "Iniciación a la Programación": "amber"
 };
 
 const read = (): Inscripcion[] => {
@@ -53,21 +56,21 @@ const read = (): Inscripcion[] => {
 const write = (r: Inscripcion) =>
   localStorage.setItem("registros", JSON.stringify([...read(), r]));
 
-export default function RegistroApp({ theme, config }: Props) {
+type Props = RegistroConfig;
+export default function RegistroApp({ config, theme }: Props) {
+  const color = theme?.primaryColor || "#1d4ed8";
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [sesiones, setSesiones] = useState<string[]>([]);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [toast, setToast] = useState<string | null>(null);
   const firstInvalidRef = useRef<HTMLInputElement | null>(null);
-  const color = theme?.primaryColor || "#1d4ed8";
-
   const [extraFields, setExtraFields] = useState<Record<string, string>>({});
 
   const errors = useMemo(() => ({
     nombre: nombre.trim() ? null : "El nombre es obligatorio.",
     email: email.trim() ? (EMAIL_RE.test(email) ? null : "Introduce un email válido.") : "El email es obligatorio.",
-    sesiones: !config?.config?.showSessionSelector || sesiones.length ? null : "Selecciona al menos una sesión.",
+    sesiones: !config?.showSessionSelector || sesiones.length ? null : "Selecciona al menos una sesión.",
   }), [nombre, email, sesiones, config]);
 
   const hasErrors = Object.values(errors).some(Boolean);
@@ -109,8 +112,12 @@ export default function RegistroApp({ theme, config }: Props) {
     if (invalid && !firstInvalidRef.current) firstInvalidRef.current = el;
   };
 
+  if (!config) {
+    return <p>Condig. no disponible</p>
+  }
+
   return (
-    <div className="min-h-dvh flex items-center justify-center px-4">
+    <section className="min-h-dvh flex items-center justify-center px-4">
       <div className="w-full max-w-lg bg-white rounded-2xl shadow p-6">
         <h1 className="text-2xl font-semibold mb-1 text-center text-[color:var(--primary)]">Registro de asistentes</h1>
         <p className="text-sm text-gray-600 text-center mb-6">Completa los campos marcados con *</p>
@@ -161,7 +168,7 @@ export default function RegistroApp({ theme, config }: Props) {
           </div>
 
           {/* Campos extra */}
-          {config?.config?.extraFields?.map((field : ExtraField) => (
+          {config?.extraFields?.map((field : ExtraField) => (
             <div className="text-center" key={field.name}>
               <Label htmlFor={field.name}>
                 {field.label} {field.required && <span className="text-red-600">*</span>}
@@ -178,7 +185,7 @@ export default function RegistroApp({ theme, config }: Props) {
           ))}
 
           {/* Sesiones (si se habilita) */}
-          {config?.config?.showSessionSelector && (
+          {config?.showSessionSelector && (
             <fieldset
               className={`rounded-2xl px-4 py-4 border ${touched.sesiones && errors.sesiones ? "border-red-500" : "border-gray-300"}`}
             >
@@ -238,6 +245,6 @@ export default function RegistroApp({ theme, config }: Props) {
           </div>
         )}
       </div>
-    </div>
+    </section>
   );
 }

@@ -1,5 +1,6 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
+import { RegistroConfigProvider } from "../../app-shell/src/RegistroConfigContext";
 import RegistroApp from "./App";
 
 const el = document.getElementById("root");
@@ -17,3 +18,4 @@ if (el) {
     />
   );
 }
+

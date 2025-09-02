@@ -39,7 +39,15 @@ type RegistroConfigProviderProps = {
 };
 
 export const RegistroConfigProvider = ({ children }: RegistroConfigProviderProps) => {
-  const [config, setConfig] = useState<RegistroConfig | null>(null);
+  const [config, setConfigState] = useState<RegistroConfig | null>(() => {
+    const saved = localStorage.getItem("registro-config");
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  const setConfig = (config: RegistroConfig) => {
+    setConfigState(config);
+    localStorage.setItem("registro-config", JSON.stringify(config));
+  };
 
   return (
     <RegistroConfigContext.Provider value={{ config, setConfig }}>
@@ -47,3 +55,4 @@ export const RegistroConfigProvider = ({ children }: RegistroConfigProviderProps
     </RegistroConfigContext.Provider>
   );
 };
+
