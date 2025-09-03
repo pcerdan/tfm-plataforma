@@ -1,9 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
-type RegistroTheme = {
-  primaryColor: string;
-};
-
 type ExtraField = {
   name: string;
   label: string;
@@ -12,7 +8,6 @@ type ExtraField = {
 };
 
 type RegistroConfig = {
-  theme?: RegistroTheme;
   config?: {
     showSessionSelector: boolean;
     extraFields: ExtraField[];

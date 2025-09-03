@@ -1,12 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { useRegistroConfig } from "./RegistroConfigContext";
 import { useState } from "react";
-import type { RegistroConfig, ExtraField } from "./types/registro"; // Ajusta ruta si está en otro sitio
+import type { RegistroConfig, ExtraField } from "./types/registro";
 
 export default function ConfiguradorRegistro() {
   const { setConfig } = useRegistroConfig();
   const navigate = useNavigate();
-  const [color, setColor] = useState("#1d4ed8");
   const [showSessionSelector, setShowSessionSelector] = useState(true);
   const [showTelfSelector, setShowTelfSelector] = useState(false);
   const [showEmpresaSelector, setShowEmpresaSelector] = useState(false);
@@ -20,9 +19,6 @@ export default function ConfiguradorRegistro() {
 
   const handleSubmit = () => {
   const config: RegistroConfig = {
-      theme: {
-        primaryColor: color
-      },
       config: {
         showSessionSelector,
         extraFields: [
@@ -49,16 +45,6 @@ export default function ConfiguradorRegistro() {
   return (
     <div className="space-y-4 p-6 bg-white rounded shadow max-w-lg mx-auto">
       <h2 className="text-xl font-semibold">Configurar módulo de registro</h2>
-
-      <div>
-        <label className="block font-medium">Color principal:</label>
-        <input
-          type="color"
-          value={color}
-          onChange={(e) => setColor(e.target.value)}
-          className="mt-1"
-        />
-      </div>
 
       <div>
         <label className="flex items-center gap-2">

@@ -61,23 +61,40 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
 
 function Home() {
   return (
-    <div className="space-y-4 bg-white rounded-xl p-6 shadow">
-      <h1 className="text-2xl font-semibold text-center">Plataforma de Eventos</h1>
-      <p className="text-sm text-gray-600 text-center">
-        Esta es la plantilla inicial. Solo el módulo <strong>Registro</strong> está activo; el resto
-        aparecen como “Próximamente”.
-      </p>
-      <ul className="list-disc ml-6 text-sm text-gray-700">
-        <li>Agenda – próximamente</li>
-        <li>Sesiones – próximamente</li>
-        <li>Ponentes – próximamente</li>
-        <li>Patrocinadores – próximamente</li>
-        <li>Registro – <em>habilitado</em></li>
-      </ul>
-      <div className="bg-red-500 text-white p-4">¿Tailwind está funcionando?</div>
-    </div>
+    <section className="space-y-8 bg-white rounded-xl p-6 shadow mt-6">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">ViuTech 2025</h1>
+        <p className="text-lg text-gray-600">
+          El evento online donde convergen las tendencias más disruptivas del desarrollo web.
+        </p>
+        <p className="text-sm text-gray-500 mt-1">Del 15 al 17 de septiembre · 100% gratuito</p>
+      </div>
+
+      <div className="bg-gray-100 p-4 rounded-lg">
+        <h2 className="text-xl font-semibold mb-2">¿Qué puedes esperar?</h2>
+        <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+          <li>🔧 Talleres prácticos sobre tecnologías modernas como React, Tailwind o TypeScript</li>
+          <li>🎤 Charlas de expertos sobre diseño de interfaces, arquitectura y accesibilidad</li>
+          <li>🚀 Una keynote especial sobre el futuro del desarrollo web</li>
+          <li>💬 Networking con otros desarrolladores a través de la plataforma</li>
+        </ul>
+      </div>
+
+      <div className="text-center">
+        <p className="text-sm text-gray-700 mb-2">
+          ¡No pierdas tu plaza! Elige las sesiones que más te interesen y únete al movimiento.
+        </p>
+        <a
+          href="/registro"
+          className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-6 rounded transition"
+        >
+          Registrarse ahora
+        </a>
+      </div>
+    </section>
   );
 }
+
 
 function App() {
   const { config } = useRegistroConfig();
@@ -105,7 +122,7 @@ function App() {
                 }
               />
               <Route path="/configuracion" element={<ConfigRegistro />} />
-              <Route path="*" element={<div className="text-center text-gray-600">Página no encontrada</div>} />
+              <Route path="*" element={<div className="text-center text-gray-600">Disponible próximamente</div>} />
             </Routes>
           </div>
         </main>

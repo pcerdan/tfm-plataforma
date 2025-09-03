@@ -2,10 +2,6 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./styles.css";
 import { Button, FieldError, Help, Input, Label, SessionCard } from "./ui";
 // 🧩 Tipado de configuración recibida por props
-type RegistroTheme = {
-  primaryColor: string;
-};
-
 type ExtraField = {
   name: string;
   label: string;
@@ -14,9 +10,6 @@ type ExtraField = {
 };
 
 type RegistroConfig = {
-  theme: {
-    primaryColor: string;
-  };
   config: {
     showSessionSelector: boolean;
     extraFields: {
@@ -37,13 +30,17 @@ type Inscripcion = {
   fecha: string;
 };
 
-const SESIONES = ["Seminario sobre IA", "Taller de Programación Competitiva", "Iniciación a la Programación"] as const;
+const SESIONES = [
+  "Taller: Microfrontends con React",
+  "Charla: UI/UX más allá del diseño",
+  "Charla: El futuro del desarrollo web"
+] as const;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const colorMap: Record<(typeof SESIONES)[number], "indigo" | "emerald" | "amber"> = {
-  "Seminario sobre IA": "indigo",
-  "Taller de Programación Competitiva": "emerald",
-  "Iniciación a la Programación": "amber"
+  "Taller: Microfrontends con React": "indigo",
+  "Charla: UI/UX más allá del diseño": "emerald",
+  "Charla: El futuro del desarrollo web": "amber"
 };
 
 const read = (): Inscripcion[] => {
@@ -57,8 +54,7 @@ const write = (r: Inscripcion) =>
   localStorage.setItem("registros", JSON.stringify([...read(), r]));
 
 type Props = RegistroConfig;
-export default function RegistroApp({ config, theme }: Props) {
-  const color = theme?.primaryColor || "#1d4ed8";
+export default function RegistroApp({ config }: Props) {
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [sesiones, setSesiones] = useState<string[]>([]);
@@ -127,7 +123,6 @@ export default function RegistroApp({ config, theme }: Props) {
           className="space-y-5 mt-4"
           noValidate
           aria-describedby="form-status"
-          style={{ "--primary": color } as React.CSSProperties}
         >
           {/* Nombre */}
           <div className="text-center">
@@ -215,12 +210,15 @@ export default function RegistroApp({ config, theme }: Props) {
 
           {/* Botones */}
           <div className="flex justify-center gap-4 mt-6">
-            <Button type="submit" disabled={hasErrors && Object.keys(touched).length > 0}>
+            <Button 
+              className="border px-4 py-2 rounded text-sm cursor-pointer bg-black text-white" 
+              type="submit" disabled={hasErrors && Object.keys(touched).length > 0}
+            >
               Enviar
             </Button>
             <button
               type="button"
-              className="border px-4 py-2 rounded text-sm"
+              className="border px-4 py-2 rounded text-sm cursor-pointer"
               onClick={() => {
                 setNombre("");
                 setEmail("");

@@ -10,7 +10,6 @@ export type ExtraField = {
 };
 
 export type RegistroConfig = {
-  theme: RegistroTheme;
   config: {
     showSessionSelector: boolean;
     extraFields: ExtraField[];

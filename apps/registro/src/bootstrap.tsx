@@ -7,7 +7,6 @@ const el = document.getElementById("root");
 if (el) {
   createRoot(el).render(
     <RegistroApp
-      theme={{ primaryColor: "#4f46e5" }}
       config={{
         showSessionSelector: true,
         extraFields: [
