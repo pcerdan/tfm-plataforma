@@ -71,8 +71,8 @@ export function StickyNavbar() {
         </Link>
 
         <div className="flex items-center gap-4">
-          <div className="mr-4 hidden lg:block">{navList}</div>
-          <div className="hidden lg:flex items-center gap-x-1">
+          <div className="mr-4 hidden lg:block nav-desktop">{navList}</div>
+          <div className="hidden lg:flex items-center gap-x-1 nav-actions">
             <Link to="/registro">
               <Button 
                 className="normal-case bg-blue-800 text-white hover:bg-blue-900 cursor-pointer" 

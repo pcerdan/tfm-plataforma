@@ -12,4 +12,8 @@
   .hover\:bg-indigo-200-force:hover { background-color: #c7d2fe !important; }
   .hover\:bg-emerald-200-force:hover { background-color: #a7f3d0 !important; }
   .hover\:bg-amber-200-force:hover { background-color: #fde68a !important; }
+  @media (min-width: 1024px) {
+    .nav-desktop { display: block !important; }
+    .nav-actions { display: flex !important; }
+  }
 }

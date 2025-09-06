@@ -3,7 +3,7 @@ const { safelist } = require("../registro/tailwind.config");
 
 module.exports = withMT({
   content: [
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./apps/app-shell/src/**/*.{js,ts,jsx,tsx,html}",
     "./node_modules/@material-tailwind/react/components/**/*.{js,ts,jsx,tsx}",
     "./node_modules/@material-tailwind/react/theme/components/**/*.{js,ts,jsx,tsx}",
   ],

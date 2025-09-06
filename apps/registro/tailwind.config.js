@@ -1,5 +1,5 @@
 module.exports = {
-  content: ["./apps/**/*.{js,ts,jsx,tsx}"],
+  content: ["./apps/**/*.{js,ts,jsx,tsx,html}"],
   safelist: [
     "bg-indigo-100", "bg-indigo-200", "bg-indigo-300",
     "bg-emerald-100", "bg-emerald-200", "bg-emerald-300",
@@ -10,4 +10,5 @@ module.exports = {
     extend: {},
   },
   plugins: [],
+  corePlugins: { preflight: false }
 }

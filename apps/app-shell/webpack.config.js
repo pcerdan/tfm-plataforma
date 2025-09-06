@@ -2,11 +2,10 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { ModuleFederationPlugin } = require("webpack").container;
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 module.exports = (_, argv) => {
   const isProd = argv.mode === "production";
-  const REMOTE_REGISTRO_URL =
-    process.env.REMOTE_REGISTRO_URL || "http://localhost:3001/remoteEntry.js";
 
   return {
     entry: path.resolve(__dirname, "src/index.tsx"),
@@ -18,9 +17,7 @@ module.exports = (_, argv) => {
       static: path.resolve(__dirname, "public"),
       watchFiles: {
         paths: ["src/**/*"],
-        options: {
-          ignored: ["**/dist/**", "**/node_modules/**"]
-        }
+        options: { ignored: ["**/dist/**", "**/node_modules/**"] }
       }
     },
     output: { path: path.resolve(__dirname, "dist"), publicPath: "auto", clean: true },
@@ -35,18 +32,21 @@ module.exports = (_, argv) => {
       new ModuleFederationPlugin({
         name: "app_shell",
         remotes: {
-          registro: `registro@${REMOTE_REGISTRO_URL}`
+          registro: "registro@http://localhost:3001/remoteEntry.js"
         },
         exposes: {
           "./RegistroConfigContext": "./src/RegistroConfigContext"
         },
         shared: {
-          react: { singleton: true, requiredVersion: false, eager: true },
-          "react-dom": { singleton: true, requiredVersion: false, eager: true }
+          react: { singleton: true, requiredVersion: false },
+          "react-dom": { singleton: true, requiredVersion: false }
         }
       }),
       new HtmlWebpackPlugin({ template: "./public/index.html" }),
-      new MiniCssExtractPlugin()
+      new MiniCssExtractPlugin(),
+      new CopyWebpackPlugin({
+        patterns: [{ from: "public/robots.txt", to: "." }],
+      }),
     ],
   };
 };
