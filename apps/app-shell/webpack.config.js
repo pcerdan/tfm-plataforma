@@ -6,6 +6,7 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 module.exports = (_, argv) => {
   const isProd = argv.mode === "production";
+  const REGISTRO = process.env.REGISTRO_REMOTE_URL || "http://localhost:3001";
 
   return {
     entry: path.resolve(__dirname, "src/index.tsx"),
@@ -32,7 +33,7 @@ module.exports = (_, argv) => {
       new ModuleFederationPlugin({
         name: "app_shell",
         remotes: {
-          registro: "registro@http://localhost:3001/remoteEntry.js"
+          registro: `registro@${REGISTRO}/remoteEntry.js`
         },
         exposes: {
           "./RegistroConfigContext": "./src/RegistroConfigContext"
