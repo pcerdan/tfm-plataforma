@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "set USE_MF=0 && webpack serve --mode development",
     "dev:mf": "set USE_MF=1 && webpack serve --mode development",
-    "build": "cross-env USE_MF=1 webpack --mode production"
+    "build": "webpack --mode production"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.12",
