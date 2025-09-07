@@ -14,7 +14,6 @@ function loadRemoteStyles(url: string): Promise<void> {
     const link = document.createElement("link");
     link.rel = "stylesheet";
     link.href = url;
-    // Inserta ANTES del primer stylesheet de la shell → la shell manda
     const first = document.querySelector('link[rel="stylesheet"]');
     first?.parentNode?.insertBefore(link, first) ?? document.head.appendChild(link);
     link.onload = () => resolve();
@@ -30,7 +29,7 @@ const RegistroLazy = React.lazy(() =>
   ]).then(([, mod]) => ({ default: mod.default }))
 );
 
-// ErrorBoundary para capturar fallos de carga del remoto
+// Para capturar fallos de carga del remoto
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
   constructor(props: any) {
     super(props);

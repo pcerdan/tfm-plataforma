@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./styles.css";
 import { Button, FieldError, Help, Input, Label, SessionCard } from "./ui";
+
 // 🧩 Tipado de configuración recibida por props
 type ExtraField = {
   name: string;

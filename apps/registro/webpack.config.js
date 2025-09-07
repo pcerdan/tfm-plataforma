@@ -7,7 +7,7 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 module.exports = (_, argv) => {
   const isProd = argv.mode === "production";
   return {
-    entry: path.resolve(__dirname, "src/index.tsx"), // ⬅ directo a bootstrap
+    entry: path.resolve(__dirname, "src/index.tsx"),
     mode: isProd ? "production" : "development",
     devtool: isProd ? "source-map" : "eval-cheap-module-source-map",
     devServer: {
