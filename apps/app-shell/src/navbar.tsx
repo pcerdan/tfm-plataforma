@@ -1,3 +1,4 @@
+// src/navbar.tsx
 import React from "react";
 import {
   Navbar,
@@ -64,7 +65,7 @@ export function StickyNavbar() {
     >
       <div className="flex items-center justify-between">
         <Link
-          to="/" 
+          to="/"
           className="mr-4 py-1.5 font-medium text-blue-900"
         >
           INICIO
@@ -74,14 +75,15 @@ export function StickyNavbar() {
           <div className="mr-4 hidden lg:block nav-desktop">{navList}</div>
           <div className="hidden lg:flex items-center gap-x-1 nav-actions">
             <Link to="/registro">
-              <Button 
-                className="normal-case bg-blue-800 text-white hover:bg-blue-900 cursor-pointer" 
+              <Button
+                className="normal-case bg-blue-800 text-white hover:bg-blue-900 cursor-pointer"
                 size="sm"
                 placeholder={undefined}
                 onResize={undefined}
                 onResizeCapture={undefined}
                 onPointerEnterCapture={undefined}
-                onPointerLeaveCapture={undefined}>
+                onPointerLeaveCapture={undefined}
+              >
                 REGISTRARSE
               </Button>
             </Link>
@@ -96,6 +98,7 @@ export function StickyNavbar() {
             onResizeCapture={undefined}
             onPointerEnterCapture={undefined}
             onPointerLeaveCapture={undefined}
+            aria-label="Abrir menú"
           >
             {openNav ? (
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" className="h-6 w-6" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -109,6 +112,27 @@ export function StickyNavbar() {
           </IconButton>
         </div>
       </div>
+
+      {/* --- Menú móvil --- */}
+      <MobileNav open={openNav}>
+        {navList}
+        <div className="mt-2 flex gap-2 border-t pt-3 lg:hidden">
+          <Link to="/registro" className="flex-1">
+            <Button
+              size="sm"
+              className="w-full normal-case bg-blue-800 text-white hover:bg-blue-900 cursor-pointer rounded-lg"
+              placeholder={undefined}
+              onResize={undefined}
+              onResizeCapture={undefined}
+              onPointerEnterCapture={undefined}
+              onPointerLeaveCapture={undefined}
+            >
+              REGISTRARSE
+            </Button>
+          </Link>
+        </div>
+      </MobileNav>
+      {/* --- Fin menú móvil --- */}
     </Navbar>
   );
 }
